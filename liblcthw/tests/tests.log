@@ -1,9 +1,0 @@
------
-RUNNNING: ././tests/list_sort_testALL TESTS PASSED
-Tests run: 2
------
-RUNNNING: ././tests/list_testALL TESTS PASSED
-Tests run: 6
------
-RUNNNING: ././tests/ringbuffer_testALL TESTS PASSED
-Tests run: 1

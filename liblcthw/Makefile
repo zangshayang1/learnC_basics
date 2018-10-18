@@ -16,15 +16,17 @@ SOURCES=$(wildcard src/**/*.c src/*.c)
 # Define OBJECTS var as a list of *.o file names that are generated from a list of existing *.c files
 OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 
-TEST_SRC=$(wildcard tests/*_test.c)
-
 # Define TESTS var as a list of executable names that are generated from a list of existing *.c files
 # NOTE: object files *.o are usually not directly executable and this is a Makefile for a library project.
+TEST_SRC=$(wildcard tests/*_test.c)
 TESTS=$(patsubst %.c, %, $(TEST_SRC))
+
+# Define PROGRAMS_SRC as the source location for utilities binaries.
+PROGRAMS_SRC=$(wildcard bin/*.c)
+PROGRAMS=$(patsubst %.c, %, $(PROGRAMS_SRC))
 
 # TARGET build, name of our build
 TARGET=build/mylib.a
-
 # *.a files are statically linked library achives. When it is used in some project, the library code will be built into the project.
 # *.so files are dynamically linked library achives, only involved and invoked during RUNTIME.
 SO_TARGET=$(patsubst %.a, %.so, $(TARGET))
@@ -32,12 +34,15 @@ SO_TARGET=$(patsubst %.a, %.so, $(TARGET))
 # This is the first target, aka default target run by command 'make'
 # Build the above two targets and unit tests
 # $(TARGET) $(SO_TARGET) tests, these three are pseudo-targets, defined as follows
-all: $(TARGET) $(SO_TARGET) tests
+all: $(TARGET) $(SO_TARGET) tests $(PROGRAMS)
 
 # Make 'developer build'
 dev: CFLAGS=-g -Wall -Isrc -Wextra $(OPTFLAGS)
 
 dev: all
+
+# Build binaries in bin/
+$(PROGRAMS): CFLAGS += $(TARGET)
 
 # Build target with additional flags
 $(TARGET): CFLAGS += -fPIC
@@ -50,6 +55,7 @@ $(TARGET): build $(OBJECTS)
 # Build dynamic library. Suited when multiple modules reference the lib.
 $(SO_TARGET): $(TARGET) $(OBJECTS)
 	$(CC) -shared -o $@ $(OBJECTS)
+
 
 # Make directories if they don't exist.
 build:
@@ -72,7 +78,7 @@ tests: $(TESTS)
 
 # Clean up build directory, objects and tests, tests.log, *.gc* files and *.dSYM directories
 clean:
-	rm -rf build $(OBJECTS) $(TESTS)
+	rm -rf build $(OBJECTS) $(TESTS) $(PROGRAMS)
 	rm -f tests/tests.log
 	find . -name "*.gc*" -exec rm {} \;
 	rm -rf `find . -name "*.dSYM" -print`
